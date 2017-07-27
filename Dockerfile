@@ -1,5 +1,6 @@
 FROM alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
+LABEL source "https://github.com/sjiveson/nfs-server-alpine"
 COPY Dockerfile /Dockerfile
 
 RUN apk add -U -v nfs-utils bash iproute2 && \
