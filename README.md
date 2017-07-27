@@ -3,12 +3,10 @@ A handy NFS Server image comprising of Alpine Linux v3.5.0 and NFS v4 only, over
 
 ## Overview
 
-A handy NFS Server image comprising of;
+The image comprises of;
 
 - [Alpine Linux](http://www.alpinelinux.org/) v3.5.0. Alpine Linux is a security-oriented, lightweight Linux distribution based on [musl libc](https://www.musl-libc.org/) (v1.1.15) and [BusyBox](https://www.busybox.net/).
 - NFS v4 only, over TCP on port 2049.
-
-**Note:** There were some serious flaws with image versions 3 and earlier. Please use **4** or **latest**. The earlier version are only here in case they are used in automated workflows.
 
 When run, this container will make whatever directory is specified by the environment variable SHARED_DIRECTORY available to NFS v4 clients.
 
@@ -42,7 +40,7 @@ You may need to do this to get things working;
 sudo ros service enable kernel-headers
 sudo ros service up kernel-headers
 ```
-RancherOS also used overlayfs for Docker so please read the next section.
+RancherOS also uses overlayfs for Docker so please read the next section.
 
 ### OverlayFS
 
