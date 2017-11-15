@@ -30,6 +30,8 @@ The exports file contains these parameters:
 
 `*(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)`
 
+Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients. 
+
 Note that the `showmount` command won't work against the server as rpcbind isn't running.
 
 ### RancherOS
@@ -81,7 +83,7 @@ rpc.nfsd: Created AF_INET6 TCP socket.
 Exporting File System...
 exporting *:/nfsshare
 Starting Mountd in the background...
-```
+``` 
 
 ### Dockerfile
 
