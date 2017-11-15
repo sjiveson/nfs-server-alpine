@@ -14,6 +14,8 @@ When run, this container will make whatever directory is specified by the enviro
 
 Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via the host networking stack. This isn't necessary if using [Rancher](http://rancher.com/) or linking containers in some other way.
 
+Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients. 
+
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
 `sudo mount -v 10.11.12.101:/ /some/where/here`
@@ -29,8 +31,6 @@ To _unmount_:
 The exports file contains these parameters:
 
 `*(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)`
-
-Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients. 
 
 Note that the `showmount` command won't work against the server as rpcbind isn't running.
 
