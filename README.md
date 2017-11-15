@@ -1,12 +1,18 @@
 # nfs-server-alpine
-A handy NFS Server image comprising of Alpine Linux v3.5.0 and NFS v4 only, over TCP on port 2049.
+A handy NFS Server image comprising of Alpine Linux v3.6.0 and NFS v4 only, over TCP on port 2049.
 
 ## Overview
 
 The image comprises of;
 
-- [Alpine Linux](http://www.alpinelinux.org/) v3.5.0. Alpine Linux is a security-oriented, lightweight Linux distribution based on [musl libc](https://www.musl-libc.org/) (v1.1.15) and [BusyBox](https://www.busybox.net/).
+- [Alpine Linux](http://www.alpinelinux.org/) v3.6.0. Alpine Linux is a security-oriented, lightweight Linux distribution based on [musl libc](https://www.musl-libc.org/) (v1.1.15) and [BusyBox](https://www.busybox.net/).
+- [Confd](https://www.confd.io/) v0.13.0
 - NFS v4 only, over TCP on port 2049.
+
+For previous tag 4;
+
+- Alpine Linux v3.5
+- Confd v0.12.0-dev
 
 When run, this container will make whatever directory is specified by the environment variable SHARED_DIRECTORY available to NFS v4 clients.
 
