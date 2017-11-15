@@ -28,7 +28,7 @@ To _unmount_:
 
 `sudo umount /some/where/here`
 
-The exports file contains these parameters:
+The /etc/exports file contains these parameters:
 
 `*(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)`
 
