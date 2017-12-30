@@ -1,9 +1,10 @@
 FROM alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
 LABEL source "https://github.com/sjiveson/nfs-server-alpine"
+LABEL branch "master"
 COPY Dockerfile /Dockerfile
 
-RUN apk add -U -v nfs-utils bash iproute2 && \
+RUN apk add --update --verbose nfs-utils bash iproute2 && \
     rm -rf /var/cache/apk/* /tmp/* && \
     rm -f /sbin/halt /sbin/poweroff /sbin/reboot && \
     mkdir -p /var/lib/nfs/rpc_pipefs && \
