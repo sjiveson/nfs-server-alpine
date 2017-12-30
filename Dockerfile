@@ -4,7 +4,7 @@ LABEL source "https://github.com/sjiveson/nfs-server-alpine"
 LABEL branch "arm"
 COPY Dockerfile /Dockerfile
 
-RUN apk add -U -v nfs-utils bash iproute2 && \
+RUN apk add --update --verbose nfs-utils bash iproute2 && \
     rm -rf /var/cache/apk/* /tmp/* && \
     rm -f /sbin/halt /sbin/poweroff /sbin/reboot && \
     mkdir -p /var/lib/nfs/rpc_pipefs && \
