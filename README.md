@@ -9,7 +9,7 @@ The image comprises of;
 - [Confd](https://www.confd.io/) v0.14.0.
 - NFS v4 only, over TCP on port 2049.
 
-The ARM tagged versions (based on (hypriot/rpi-alpine)[https://github.com/hypriot/rpi-alpine]) also include:
+The ARM tagged versions (based on [hypriot/rpi-alpine](https://github.com/hypriot/rpi-alpine)) also include:
 
 - The qemu-arm-static binary.
 
