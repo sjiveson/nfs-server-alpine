@@ -1,6 +1,7 @@
-FROM alpine:latest
+FROM hypriot/rpi-alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
 LABEL source "https://github.com/sjiveson/nfs-server-alpine"
+LABEL branch "arm"
 COPY Dockerfile /Dockerfile
 
 RUN apk add -U -v nfs-utils bash iproute2 && \
