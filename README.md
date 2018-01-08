@@ -6,12 +6,15 @@ A handy NFS Server image comprising of Alpine Linux v3.6.0 and NFS v4 only, over
 The image comprises of;
 
 - [Alpine Linux](http://www.alpinelinux.org/) v3.6.0. Alpine Linux is a security-oriented, lightweight Linux distribution based on [musl libc](https://www.musl-libc.org/) (v1.1.15) and [BusyBox](https://www.busybox.net/).
-- [Confd](https://www.confd.io/) v0.13.0.
+- [Confd](https://www.confd.io/) v0.14.0.
 - NFS v4 only, over TCP on port 2049.
 
-The ARM tagged versions (based on (hypriot/rpi-alpine)[https://github.com/hypriot/rpi-alpine]) also include:
+The ARM tagged versions (based on [hypriot/rpi-alpine](https://github.com/hypriot/rpi-alpine)) also include:
 
 - The qemu-arm-static binary.
+
+For previous tag 5;
+- Confd v0.13.0
 
 For previous tag 4;
 
