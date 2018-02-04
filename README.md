@@ -1,6 +1,10 @@
+# nfs-server-alpine
+
+A handy NFS Server image comprising of Alpine Linux v3.6.0 and NFS v4 only, over TCP on port 2049.
+
 ## Overview
 
-A handy NFS Server image comprising of;
+The image comprises of;
 
 - [Alpine Linux](http://www.alpinelinux.org/) v3.7.0. Alpine Linux is a security-oriented, lightweight Linux distribution based on [musl libc](https://www.musl-libc.org/) (v1.1.18) and [BusyBox](https://www.busybox.net/).
 - [Confd](https://www.confd.io/) v0.14.0
@@ -30,7 +34,7 @@ When run, this container will make whatever directory is specified by the enviro
 
 Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via the host networking stack. This isn't necessary if using [Rancher](http://rancher.com/) or linking containers in some other way.
 
-Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients. 
+Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients.
 
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
@@ -68,7 +72,7 @@ On RancherOS the **/home**, **/media** and **/mnt** file systems are good choice
 
 ### Other OS's
 
-You may need to ensure the **nfs** and **nfsd** kernel modules are loaded by running `modprobe nfs nfsd`. 
+You may need to ensure the **nfs** and **nfsd** kernel modules are loaded by running `modprobe nfs nfsd`.
 
 ### Mounting Within a Container
 
@@ -83,7 +87,7 @@ Starting Confd population of files...
 confd 0.12.0-dev
 2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Backend set to env
 2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Starting confd
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Backend nodes set to 
+2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Backend nodes set to
 2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO /etc/exports has md5sum 4f1bb7b2412ce5952ecb5ec22d8ed99d should be 92cc8fa446eef0e167648be03aba09e5
 2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Target config /etc/exports out of sync
 2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Target config /etc/exports has been updated
@@ -93,20 +97,17 @@ Displaying /etc/exports contents...
 
 Starting NFS in the background...
 rpc.nfsd: knfsd is currently down
-rpc.nfsd: Writing version string to kernel: -2 -3 +4 
+rpc.nfsd: Writing version string to kernel: -2 -3 +4
 rpc.nfsd: Created AF_INET TCP socket.
 rpc.nfsd: Created AF_INET6 TCP socket.
 Exporting File System...
 exporting *:/nfsshare
 Starting Mountd in the background...
 ```
-### Source
-
-This image's source files can be found on GitHub here: https://github.com/sjiveson/nfs-server-alpine.
 
 ### Dockerfile
 
-The Dockerfile used to create this image is available at the root of the file system and on [GitHub](https://github.com/sjiveson/nfs-server-alpine). Here it is anyway:
+The Dockerfile used to create this image is available at the root of the file system on build.
 
 ```
 FROM alpine:latest
