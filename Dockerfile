@@ -1,4 +1,4 @@
-FROM hypriot/rpi-alpine:latest
+FROM alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
 LABEL source "https://github.com/sjiveson/nfs-server-alpine"
 LABEL branch "arm"
