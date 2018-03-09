@@ -64,6 +64,15 @@ sudo ros service up kernel-headers
 ```
 RancherOS also used overlayfs for Docker so please read the next section.
 
+### Host Mode Networking & Rancher DNS
+
+You'll need to use this label if you are using host network mode and want other services to resolve the NFS service's name via Rancher DNS:
+
+```
+  labels:
+    io.rancher.container.dns: 'true'
+```
+
 ### OverlayFS
 
 OverlayFS does not support NFS export so please volume mount into your NFS container from an alternative (hopefully one is available).
