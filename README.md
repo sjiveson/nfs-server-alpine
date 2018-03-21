@@ -36,6 +36,8 @@ Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via 
 
 Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients.
 
+Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `async`, allowing synchronous mode.
+
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
 `sudo mount -v 10.11.12.101:/ /some/where/here`
