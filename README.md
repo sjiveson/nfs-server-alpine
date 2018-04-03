@@ -1,6 +1,6 @@
 # nfs-server-alpine
 
-A handy NFS Server image comprising of Alpine Linux v3.6.0 and NFS v4 only, over TCP on port 2049.
+A handy NFS Server image comprising Alpine Linux and NFS v4 only, over TCP on port 2049.
 
 ## Overview
 
@@ -34,7 +34,9 @@ When run, this container will make whatever directory is specified by the enviro
 
 Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via the host networking stack. This isn't necessary if using [Rancher](http://rancher.com/) or linking containers in some other way.
 
-Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by the clients.
+Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by clients.
+
+Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `async`, allowing synchronous mode. Check the exports man page for more information: https://linux.die.net/man/5/exports.
 
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
@@ -62,7 +64,17 @@ You may need to do this to get things working;
 sudo ros service enable kernel-headers
 sudo ros service up kernel-headers
 ```
-RancherOS also used overlayfs for Docker so please read the next section.
+RancherOS also uses overlayfs for Docker so please read the next section.
+
+### OverlayFS
+
+OverlayFS does not support NFS export so please volume mount into your NFS container from an alternative (hopefully one is available).
+
+On RancherOS the **/home**, **/media** and **/mnt** file systems are good choices as these are ext4.
+
+### Other Operating Systems
+
+You may need to ensure the **nfs** and **nfsd** kernel modules are loaded by running `modprobe nfs nfsd`.
 
 ### Host Mode Networking & Rancher DNS
 
@@ -72,16 +84,6 @@ You'll need to use this label if you are using host network mode and want other 
   labels:
     io.rancher.container.dns: 'true'
 ```
-
-### OverlayFS
-
-OverlayFS does not support NFS export so please volume mount into your NFS container from an alternative (hopefully one is available).
-
-On RancherOS the **/home**, **/media** and **/mnt** file systems are good choices as these are ext4.
-
-### Other OS's
-
-You may need to ensure the **nfs** and **nfsd** kernel modules are loaded by running `modprobe nfs nfsd`.
 
 ### Mounting Within a Container
 
