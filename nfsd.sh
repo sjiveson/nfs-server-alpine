@@ -38,7 +38,8 @@ while true; do
     cat /etc/exports
     echo ""
 
-    # Only required if v3 will be used
+    # Normally only required if v3 will be used
+    # But currently enabled to overcome an NFS bug around opening an IPv6 socket
     echo "Starting rpcbind..."
     /sbin/rpcbind -w
     echo "Displaying rpcbind status..."
