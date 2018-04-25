@@ -56,6 +56,10 @@ The /etc/exports file contains these parameters:
 
 Note that the `showmount` command won't work against the server as rpcbind isn't running.
 
+### Kubernetes
+
+As reported here https://github.com/sjiveson/nfs-server-alpine/issues/8 it appears Kubernetes requires the `privileged: true` option to be set.
+
 ### RancherOS
 
 You may need to do this to get things working;
