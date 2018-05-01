@@ -69,7 +69,7 @@ sudo ros service enable kernel-headers
 sudo ros service up kernel-headers
 ```
 
-Alternatively you can add this to the cloud-config.yml (or user data on the cloud):
+Alternatively you can add this to the host's **cloud-config.yml** (or user data on the cloud):
 
 ```
 #cloud-config
