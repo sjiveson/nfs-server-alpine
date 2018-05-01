@@ -68,6 +68,16 @@ You may need to do this to get things working;
 sudo ros service enable kernel-headers
 sudo ros service up kernel-headers
 ```
+
+Alternatively you can add this to the host's **cloud-config.yml** (or user data on the cloud):
+
+```
+#cloud-config
+rancher:
+  services_include:
+    kernel-headers: true
+```
+
 RancherOS also uses overlayfs for Docker so please read the next section.
 
 ### OverlayFS
