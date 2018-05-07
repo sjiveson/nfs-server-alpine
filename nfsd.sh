@@ -9,7 +9,7 @@ stop()
   # We're here because we've seen SIGTERM, likely via a Docker stop command or similar
   # Let's shutdown cleanly
   echo "SIGTERM caught, terminating NFS process(es)..."
-  /usr/sbin/exportfs -ua
+  /usr/sbin/exportfs -uav
   pid1=$(pidof rpc.nfsd)
   pid2=$(pidof rpc.mountd)
   kill -TERM $pid1 $pid2 > /dev/null 2>&1
@@ -17,9 +17,21 @@ stop()
   exit
 }
 
-if [ -z "$SHARED_DIRECTORY" ]; then
-  echo "The SHARED_DIRECTORY environment variable is null, exiting..."
+if [ -z "${SHARED_DIRECTORY}" ]; then
+  echo "The SHARED_DIRECTORY environment variable is missing or null, exiting..."
   exit 1
+fi
+if [ -z "${PERMITTED}" ]; then
+  echo "The PERMITTED environment variable is missing or null, defaulting to '*'."
+  echo "Any client can mount."
+fi
+if [ -z "${READ_ONLY}" ]; then
+  echo "The READ_ONLY environment variable is missing or null, defaulting to 'rw'"
+  echo "Clients have read/write access."
+fi
+if [ -z "${SYNC}" ]; then
+  echo "The SYNC environment variable is missing or null, defaulting to 'async'".
+  echo "Writes will not be immediately written to disk."
 fi
 
 # This loop runs till until we've started up successfully
@@ -54,6 +66,7 @@ while true; do
     /usr/sbin/rpc.nfsd --debug 8 --no-udp --no-nfs-version 2 --no-nfs-version 3
     echo "Exporting File System..."
     /usr/sbin/exportfs -rv
+    /usr/sbin/exportfs
     echo "Starting Mountd in the background..."
     /usr/sbin/rpc.mountd --debug all --no-udp --no-nfs-version 2 --no-nfs-version 3
 # --exports-file /etc/exports
@@ -72,6 +85,7 @@ while true; do
 
   # Break this outer loop once we've started up successfully
   # Otherwise, we'll silently restart and Docker won't know
+  echo "Startup successful."
   break
 
 done

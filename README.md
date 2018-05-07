@@ -32,11 +32,13 @@ When run, this container will make whatever directory is specified by the enviro
 
 `docker run -d --name nfs --privileged -v /some/where/fileshare:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest`
 
-Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via the host networking stack. This isn't necessary if using [Rancher](http://rancher.com/) or linking containers in some other way.
+Add `--net=host` or `-p 2049:2049` to make the shares externally accessible via the host networking stack. This isn't necessary if using [Rancher](https://rancher.com/) or linking containers in some other way.
 
 Adding `-e READ_ONLY=true` will cause the exports file to contain `ro` instead of `rw`, allowing only read access by clients.
 
-Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `async`, allowing synchronous mode. Check the exports man page for more information: https://linux.die.net/man/5/exports.
+Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `async`, enabling synchronous mode. Check the exports man page for more information: https://linux.die.net/man/5/exports.
+
+Adding `-e PERMITTED="10.11.99.*"` will permit only hosts with an IP address starting 10.11.99 to mount the file share.
 
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
@@ -108,18 +110,37 @@ The container requires the SYS_ADMIN capability, or, less securely, to be run in
 A successful server start should produce log output like this:
 
 ```
+The PERMITTED environment variable is missing or null, defaulting to '*'.
+Any client can mount.
+The READ_ONLY environment variable is missing or null, defaulting to 'rw'
+Clients have read/write access.
+The SYNC environment variable is missing or null, defaulting to 'async'.
+Writes will not be immediately written to disk.
 Starting Confd population of files...
-confd 0.12.0-dev
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Backend set to env
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Starting confd
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Backend nodes set to
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO /etc/exports has md5sum 4f1bb7b2412ce5952ecb5ec22d8ed99d should be 92cc8fa446eef0e167648be03aba09e5
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Target config /etc/exports out of sync
-2017-05-17T09:24:57Z ffcbba1623e6 /usr/bin/confd[13]: INFO Target config /etc/exports has been updated
-
+confd 0.14.0 (Git SHA: 9fab9634, Go Version: go1.9.1)
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO Backend set to env
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO Starting confd
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO Backend source(s) set to
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO /etc/exports has md5sum 4f1bb7b2412ce5952ecb5ec22d8ed99d should be 92cc8fa446eef0e167648be03aba09e5
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO Target config /etc/exports out of sync
+2018-05-07T18:24:39Z d62d37258311 /usr/bin/confd[14]: INFO Target config /etc/exports has been updated
 Displaying /etc/exports contents...
 /nfsshare *(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)
-
+Starting rpcbind...
+Displaying rpcbind status...
+   program version netid     address                service    owner
+    100000    4    tcp6      ::.0.111               -          superuser
+    100000    3    tcp6      ::.0.111               -          superuser
+    100000    4    udp6      ::.0.111               -          superuser
+    100000    3    udp6      ::.0.111               -          superuser
+    100000    4    tcp       0.0.0.0.0.111          -          superuser
+    100000    3    tcp       0.0.0.0.0.111          -          superuser
+    100000    2    tcp       0.0.0.0.0.111          -          superuser
+    100000    4    udp       0.0.0.0.0.111          -          superuser
+    100000    3    udp       0.0.0.0.0.111          -          superuser
+    100000    2    udp       0.0.0.0.0.111          -          superuser
+    100000    4    local     /var/run/rpcbind.sock  -          superuser
+    100000    3    local     /var/run/rpcbind.sock  -          superuser
 Starting NFS in the background...
 rpc.nfsd: knfsd is currently down
 rpc.nfsd: Writing version string to kernel: -2 -3 +4
@@ -127,7 +148,9 @@ rpc.nfsd: Created AF_INET TCP socket.
 rpc.nfsd: Created AF_INET6 TCP socket.
 Exporting File System...
 exporting *:/nfsshare
+/nfsshare     	<world>
 Starting Mountd in the background...
+Startup successful.
 ```
 
 ### Dockerfile
