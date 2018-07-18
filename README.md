@@ -56,11 +56,56 @@ The /etc/exports file contains these parameters:
 
 `*(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)`
 
-Note that the `showmount` command won't work against the server as rpcbind isn't running.
+The /etc/exports file contains these parameters unless modified by the environment variables listed above:
 
-### Kubernetes
+### Privileged Mode
 
-As reported here https://github.com/sjiveson/nfs-server-alpine/issues/8 it appears Kubernetes requires the `privileged: true` option to be set.
+You'll note above with the `docker run` command that privileged mode is required. Yes, this is a security risk but an unavoidable one it seems. You could try these instead: `--cap-add SYS_ADMIN --cap-add SETPCAP --security-opt=no-new-privileges` but I've not had any luck with them myself. You may fare better with your own combination of Docker and OS. The SYS_ADMIN capability is very, very broad in any case and almost as risky as privileged mode. 
+
+See the following sub-sections for information on doing the same in non-interactive environments.
+
+#### Kubernetes
+
+As reported here https://github.com/sjiveson/nfs-server-alpine/issues/8 it appears Kubernetes requires the `privileged: true` option to be set:
+
+```
+spec:
+  containers:
+  - name: ...
+    image: ...
+    securityContext:
+      privileged: true
+```
+
+To use capabilities instead:
+
+```
+spec:
+  containers:
+  - name: ...
+    image: ...
+    securityContext:
+      capabilities:
+        add: ["SYS_ADMIN", "SETPCAP"]
+```
+
+Note that AllowPrivilegeEscalation is automatically set to true when privileged mode is set to true or the SYS_ADMIN capability added.
+
+#### Docker Compose v2/v3 & Rancher v1.x
+
+When using Docker Compose you can specify privileged mode like so:
+
+```
+privileged: true
+```
+
+To use capabilities instead:
+
+```
+cap_add:
+  - SYS_ADMIN
+  - SETPCAP
+```
 
 ### RancherOS
 
