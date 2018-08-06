@@ -1,3 +1,16 @@
+FROM golang:alpine as builder
+
+ARG CONFD_VERSION=v0.14.0
+
+ENV ROOT=$GOPATH/src/github.com/kelseyhightower
+RUN apk add --no-cache git make
+RUN mkdir -p $ROOT
+RUN git clone https://github.com/kelseyhightower/confd.git $ROOT/confd
+RUN git -C $ROOT/confd checkout -q $CONFD_VERSION
+RUN make --directory $ROOT/confd
+RUN cp $ROOT/confd/bin/confd /
+
+
 FROM alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
 LABEL source "https://github.com/sjiveson/nfs-server-alpine"
@@ -13,7 +26,7 @@ RUN apk add --update --verbose nfs-utils bash iproute2 && \
     echo "rpc_pipefs    /var/lib/nfs/rpc_pipefs rpc_pipefs      defaults        0       0" >> /etc/fstab && \
     echo "nfsd  /proc/fs/nfsd   nfsd    defaults        0       0" >> /etc/fstab
 
-COPY confd-binary /usr/bin/confd
+COPY --from=builder /confd /usr/bin/confd
 COPY confd/confd.toml /etc/confd/confd.toml
 COPY confd/toml/* /etc/confd/conf.d/
 COPY confd/tmpl/* /etc/confd/templates/
