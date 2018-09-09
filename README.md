@@ -60,7 +60,7 @@ The /etc/exports file contains these parameters unless modified by the environme
 
 ### Privileged Mode
 
-You'll note above with the `docker run` command that privileged mode is required. Yes, this is a security risk but an unavoidable one it seems. You could try these instead: `--cap-add SYS_ADMIN --cap-add SETPCAP --security-opt=no-new-privileges` but I've not had any luck with them myself. You may fare better with your own combination of Docker and OS. The SYS_ADMIN capability is very, very broad in any case and almost as risky as privileged mode. 
+You'll note above with the `docker run` command that privileged mode is required. Yes, this is a security risk but an unavoidable one it seems. You could try these instead: `--cap-add SYS_ADMIN --cap-add SETPCAP --security-opt=no-new-privileges` but I've not had any luck with them myself. You may fare better with your own combination of Docker and OS. The SYS_ADMIN capability is very, very broad in any case and almost as risky as privileged mode.
 
 See the following sub-sections for information on doing the same in non-interactive environments.
 
@@ -203,18 +203,33 @@ Startup successful.
 The Dockerfile used to create this image is available at the root of the file system on build.
 
 ```
-FROM alpine:latest
-MAINTAINER Steven Iveson <steve@iveson.eu>
+FROM golang:1.9-alpine as confd
 
-RUN apk add -U -v nfs-utils bash iproute2 && \
-    rm -rf /var/cache/apk/* /tmp/* && \
-    rm -f /sbin/halt /sbin/poweroff /sbin/reboot && \
-    mkdir -p /var/lib/nfs/rpc_pipefs && \
-    mkdir -p /var/lib/nfs/v4recovery && \
+ARG CONFD_VERSION=0.14.0
+
+ADD https://github.com/kelseyhightower/confd/archive/v${CONFD_VERSION}.tar.gz /tmp/
+
+RUN apk add --no-cache bzip2 make && \
+    mkdir -p /go/src/github.com/kelseyhightower/confd && \
+    cd /go/src/github.com/kelseyhightower/confd && \
+    tar --strip-components=1 -zxf /tmp/v${CONFD_VERSION}.tar.gz && \
+    go install github.com/kelseyhightower/confd && \
+    rm -rf /tmp/v${CONFD_VERSION}.tar.gz /go/src/github.com/kelseyhightower/confd
+
+
+FROM alpine:latest
+LABEL maintainer "Steven Iveson <steve@iveson.eu>"
+LABEL source "https://github.com/sjiveson/nfs-server-alpine"
+LABEL branch "arm"
+COPY Dockerfile README.md /
+
+RUN apk add --no-cache --update --verbose nfs-utils bash iproute2 && \
+    rm -rf /var/cache/apk /tmp /sbin/halt /sbin/poweroff /sbin/reboot && \
+    mkdir -p /var/lib/nfs/rpc_pipefs /var/lib/nfs/v4recovery && \
     echo "rpc_pipefs    /var/lib/nfs/rpc_pipefs rpc_pipefs      defaults        0       0" >> /etc/fstab && \
     echo "nfsd  /proc/fs/nfsd   nfsd    defaults        0       0" >> /etc/fstab
 
-COPY confd-binary /usr/bin/confd
+COPY --from=confd /go/bin/confd /usr/bin/confd
 COPY confd/confd.toml /etc/confd/confd.toml
 COPY confd/toml/* /etc/confd/conf.d/
 COPY confd/tmpl/* /etc/confd/templates/
@@ -223,5 +238,10 @@ COPY nfsd.sh /usr/bin/nfsd.sh
 COPY .bashrc /root/.bashrc
 
 RUN chmod +x /usr/bin/nfsd.sh /usr/bin/confd
+
 ENTRYPOINT ["/usr/bin/nfsd.sh"]
 ```
+
+### Acknowlegements
+
+Thanks to Torsten Bronger @bronger for the suggestion and help around implementing a multistage Docker build.
