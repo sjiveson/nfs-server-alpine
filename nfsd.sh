@@ -12,7 +12,9 @@ stop()
   /usr/sbin/exportfs -uav
   pid1=$(pidof rpc.nfsd)
   pid2=$(pidof rpc.mountd)
-  kill -TERM $pid1 $pid2 > /dev/null 2>&1
+  # For IPv6 bug:
+  pid3=$(pidof rpcbind)
+  kill -TERM $pid1 $pid2 $pid3 > /dev/null 2>&1
   echo "Terminated."
   exit
 }
@@ -20,19 +22,40 @@ stop()
 if [ -z "${SHARED_DIRECTORY}" ]; then
   echo "The SHARED_DIRECTORY environment variable is missing or null, exiting..."
   exit 1
+else
+  echo "Writing SHARED_DIRECTORY to /etc/exports file"
+  /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
 fi
+
+if [ ! -z "${SHARED_DIRECTORY_2}" ]; then
+  echo "{{SHARED_DIRECTORY_2}} {{PERMITTED}}({{READ_ONLY}},fsid=0,{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
+  /bin/sed -i "s/{{SHARED_DIRECTORY_2}}/${SHARED_DIRECTORY_2}/g" /etc/exports
+fi
+
 if [ -z "${PERMITTED}" ]; then
   echo "The PERMITTED environment variable is missing or null, defaulting to '*'."
   echo "Any client can mount."
+  /bin/sed -i "s/{{PERMITTED}}/*/g" /etc/exports
+else
+  /bin/sed -i "s/{{PERMITTED}}/"${PERMITTED}"/g" /etc/exports
 fi
+
 if [ -z "${READ_ONLY}" ]; then
   echo "The READ_ONLY environment variable is missing or null, defaulting to 'rw'"
   echo "Clients have read/write access."
+  /bin/sed -i "s/{{READ_ONLY}}/rw/g" /etc/exports
+else
+  /bin/sed -i "s/{{READ_ONLY}}/ro/g" /etc/exports
 fi
+
 if [ -z "${SYNC}" ]; then
   echo "The SYNC environment variable is missing or null, defaulting to 'async'".
   echo "Writes will not be immediately written to disk."
+  /bin/sed -i "s/{{SYNC}}/async/g" /etc/exports
+else
+  /bin/sed -i "s/{{SYNC}}/sync/g" /etc/exports
 fi
+
 
 # This loop runs till until we've started up successfully
 while true; do
@@ -42,10 +65,6 @@ while true; do
 
   # If $pid is null, do this to start or restart NFS:
   while [ -z "$pid" ]; do
-    echo "Starting Confd population of files..."
-    /usr/bin/confd -version
-    /usr/bin/confd -onetime
-    echo ""
     echo "Displaying /etc/exports contents..."
     cat /etc/exports
     echo ""
@@ -65,8 +84,12 @@ while true; do
     echo "Starting NFS in the background..."
     /usr/sbin/rpc.nfsd --debug 8 --no-udp --no-nfs-version 2 --no-nfs-version 3
     echo "Exporting File System..."
-    /usr/sbin/exportfs -rv
-    /usr/sbin/exportfs
+    if /usr/sbin/exportfs -rv; then
+      /usr/sbin/exportfs
+    else
+      echo "Export validation failed, exiting..."
+      exit 1
+    fi
     echo "Starting Mountd in the background..."
     /usr/sbin/rpc.mountd --debug all --no-udp --no-nfs-version 2 --no-nfs-version 3
 # --exports-file /etc/exports

@@ -1,1 +1,0 @@
-{{getenv "SHARED_DIRECTORY"}} {{if getenv "PERMITTED"}}{{getenv "PERMITTED"}}{{else}}*{{end}}({{if getenv "READ_ONLY"}}ro{{else}}rw{{end}},fsid=0,{{if getenv "SYNC"}}sync{{else}}async{{end}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)

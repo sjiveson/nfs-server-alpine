@@ -1,8 +1,0 @@
-[template]
-src = "exports.tmpl"
-dest = "/etc/exports"
-mode = "0644"
-keys = [
-    "SHARED_DIRECTORY",
-    "READ_ONLY"
-]
