@@ -19,7 +19,9 @@ stop()
   exit
 }
 
-# How much do we need these checks?
+# Get mounts
+mounts=( "${@}" )
+
 # Check if the PERMITTED variable is empty
 if [ -z "${PERMITTED}" ]; then
   echo "The PERMITTED environment variable is unset or null, defaulting to '*'."
@@ -55,6 +57,7 @@ fi
 # if NFS_OPTS is not set
 # then use legacy approach
 if [ -z "${NFS_OPTS}" ]; then
+  echo "NFS_OPTS has not been defined. Adding default parameters"
   # set default options from legacy approach
   DEFAULT_OPTS=fsid=0,no_subtree_check,no_auth_nlm,insecure,no_root_squash
   
@@ -63,6 +66,7 @@ if [ -z "${NFS_OPTS}" ]; then
 else
 
   # Otherwise use NFS_OPTS directly
+  echo "NFS_OPTS has been defined. Disregarding READ_ONLY,SYNC, and default parameters"
 
   # Build opts string
   opts=${NFS_OPTS}
@@ -77,10 +81,8 @@ else
   mounts[${#mounts[@]}]=$SHARED_DIRECTORY
 fi
 
-# Get mounts
-mounts="${@}"
-
 for mnt in "${mounts[@]}"; do
+  echo "Setting up exports for mount: $mnt"
   src=$(echo $mnt | awk -F':' '{ print $1 }')
   mkdir -p $src
   echo "$src ${PERMITTED}($opts)" >> /etc/exports
