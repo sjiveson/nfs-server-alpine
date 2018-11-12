@@ -59,13 +59,13 @@ if [ -z "${NFS_OPTS}" ]; then
   DEFAULT_OPTS=fsid=0,no_subtree_check,no_auth_nlm,insecure,no_root_squash
   
   # Build opts string
-  opts=`echo "${SET_OPTS} ${DEFAULT_OPTS}" | tr -s ' ' | tr ' ' ','`
+  opts=${SET_OPTS},${DEFAULT_OPTS}
 else
 
   # Otherwise use NFS_OPTS directly
 
   # Build opts string
-  opts=`echo "${NFS_OPTS}" | tr -s ' ' | tr ' ' ','`
+  opts=${NFS_OPTS}
 fi;
 
 
