@@ -73,9 +73,7 @@ else
 fi;
 
 # Check if the SHARED_DIRECTORY variable is empty
-if [ -z "${SHARED_DIRECTORY}" ]; then
-  echo "The SHARED_DIRECTORY environment variable is unset or null, using new approach"
-else
+if [ ! -z "${SHARED_DIRECTORY}" ]; then
   echo "SHARED_DIRECTORY is set. Please use CMD instead"
   echo "Adding SHARED_DIRECTORY to CMD input"
   mounts[${#mounts[@]}]=$SHARED_DIRECTORY
