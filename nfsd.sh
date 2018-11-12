@@ -20,41 +20,55 @@ stop()
 }
 
 # How much do we need these checks?
-## Check if the PERMITTED variable is empty
-#if [ -z "${PERMITTED}" ]; then
-#  echo "The PERMITTED environment variable is unset or null, defaulting to '*'."
-#  echo "This means any client can mount."
-#  /bin/sed -i "s/{{PERMITTED}}/*/g" /etc/exports
-#else
-#  echo "The PERMITTED environment variable is set."
-#  echo "The permitted clients are: ${PERMITTED}."
-#  /bin/sed -i "s/{{PERMITTED}}/"${PERMITTED}"/g" /etc/exports
-#fi
-#
-## Check if the READ_ONLY variable is set (rather than a null string) using parameter expansion
-#if [ -z ${READ_ONLY+y} ]; then
-#  echo "The READ_ONLY environment variable is unset or null, defaulting to 'rw'."
-#  echo "Clients have read/write access."
-#  /bin/sed -i "s/{{READ_ONLY}}/rw/g" /etc/exports
-#else
-#  echo "The READ_ONLY environment variable is set."
-#  echo "Clients will have read-only access."
-#  /bin/sed -i "s/{{READ_ONLY}}/ro/g" /etc/exports
-#fi
-#
-## Check if the SYNC variable is set (rather than a null string) using parameter expansion
-#if [ -z "${SYNC+y}" ]; then
-#  echo "The SYNC environment variable is unset or null, defaulting to 'async' mode".
-#  echo "Writes will not be immediately written to disk."
-#  /bin/sed -i "s/{{SYNC}}/async/g" /etc/exports
-#else
-#  echo "The SYNC environment variable is set, using 'sync' mode".
-#  echo "Writes will be immediately written to disk."
-#  /bin/sed -i "s/{{SYNC}}/sync/g" /etc/exports
-#fi
+# Check if the PERMITTED variable is empty
+if [ -z "${PERMITTED}" ]; then
+  echo "The PERMITTED environment variable is unset or null, defaulting to '*'."
+  echo "This means any client can mount."
+  PERMITTED=*
+else
+  echo "The PERMITTED environment variable is set."
+  echo "The permitted clients are: ${PERMITTED}."
+fi
 
-# Build opts string
-opts=`echo "${READ_ONLY} ${SYNC} ${FSID} ${SUBTREE_CHECK} ${ROOT_SQUASH}" | tr -s ' ' | tr ' ' ','`
+# Check if the READ_ONLY variable is set (rather than a null string) using parameter expansion
+if [ -z ${READ_ONLY+y} ]; then
+  echo "The READ_ONLY environment variable is unset or null, defaulting to 'rw'."
+  echo "Clients have read/write access."
+  SET_OPTS=rw
+else
+  echo "The READ_ONLY environment variable is set."
+  echo "Clients will have read-only access."
+  SET_OPTS=ro
+fi
+
+# Check if the SYNC variable is set (rather than a null string) using parameter expansion
+if [ -z "${SYNC+y}" ]; then
+  echo "The SYNC environment variable is unset or null, defaulting to 'async' mode".
+  echo "Writes will not be immediately written to disk."
+  SET_OPTS=${SET_OPTS},async
+else
+  echo "The SYNC environment variable is set, using 'sync' mode".
+  echo "Writes will be immediately written to disk."
+  SET_OPTS=${SET_OPTS},sync
+fi
+
+# if NFS_OPTS is not set
+# then use legacy approach
+if [ -z "${NFS_OPTS}" ]; then
+  # set default options from legacy approach
+  DEFAULT_OPTS=fsid=0,no_subtree_check,no_auth_nlm,insecure,no_root_squash
+  
+  # Build opts string
+  opts=`echo "${SET_OPTS} ${DEFAULT_OPTS}" | tr -s ' ' | tr ' ' ','`
+else
+
+  # Otherwise use NFS_OPTS directly
+
+  # Build opts string
+  opts=`echo "${NFS_OPTS}" | tr -s ' ' | tr ' ' ','`
+fi;
+
+
 
 # Get mounts
 mounts="${@}"
