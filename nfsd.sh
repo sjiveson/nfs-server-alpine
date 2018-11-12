@@ -68,7 +68,14 @@ else
   opts=${NFS_OPTS}
 fi;
 
-
+# Check if the SHARED_DIRECTORY variable is empty
+if [ -z "${SHARED_DIRECTORY}" ]; then
+  echo "The SHARED_DIRECTORY environment variable is unset or null, using new approach"
+else
+  echo "SHARED_DIRECTORY is set. Please use CMD instead"
+  echo "Adding SHARED_DIRECTORY to CMD input"
+  mounts[${#mounts[@]}]=$SHARED_DIRECTORY
+fi
 
 # Get mounts
 mounts="${@}"
@@ -78,28 +85,6 @@ for mnt in "${mounts[@]}"; do
   mkdir -p $src
   echo "$src ${PERMITTED}($opts)" >> /etc/exports
 done
-
-## Check if the SHARED_DIRECTORY variable is empty
-#if [ -z "${SHARED_DIRECTORY}" ]; then
-#  echo "The SHARED_DIRECTORY environment variable is unset or null, exiting..."
-#  exit 1
-#else
-#  echo "Writing SHARED_DIRECTORY to /etc/exports file"
-#  /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
-#fi
-#
-## This is here to demonsrate how multiple directories can be shared. You
-## would need a block like this for each extra share.
-## Any additional shares MUST be subdirectories of the root directory specified
-## by SHARED_DIRECTORY.
-#
-## Check if the SHARED_DIRECTORY_2 variable is empty
-#if [ ! -z "${SHARED_DIRECTORY_2}" ]; then
-#  echo "Writing SHARED_DIRECTORY_2 to /etc/exports file"
-#  echo "{{SHARED_DIRECTORY_2}} {{PERMITTED}}({{READ_ONLY}},{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
-#  /bin/sed -i "s@{{SHARED_DIRECTORY_2}}@${SHARED_DIRECTORY_2}@g" /etc/exports
-#fi
-
 
 # Partially set 'unofficial Bash Strict Mode' as described here: http://redsymbol.net/articles/unofficial-bash-strict-mode/
 # We don't set -e because the pidof command returns an exit code of 1 when the specified process is not found
