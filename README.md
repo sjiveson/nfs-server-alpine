@@ -185,15 +185,51 @@ sudo mount -v 10.11.12.101:/ /mnt/one
 sudo mount -v 10.11.12.101:/another /mnt/two
 ```
 
-You might want to make the root share read only, or even make it inaccessible, to encourage users to only mount the correct shares directly. To do so you'll need to modify the exports file so the root share doesn't get configured based on  
+You might want to make the root share read only, or even make it inaccessible, to encourage users to only mount the correct, more specific shares directly. To do so you'll need to modify the exports file so the root share doesn't get configured based on the values assigned to the PERMITTED or SYNC environment variables.
 
 ### What Good Looks Like
 
+A successful server start should produce log output like this:
 
+```
+Writing SHARED_DIRECTORY to /etc/exports file
+The PERMITTED environment variable is unset or null, defaulting to '*'.
+This means any client can mount.
+The READ_ONLY environment variable is unset or null, defaulting to 'rw'.
+Clients have read/write access.
+The SYNC environment variable is unset or null, defaulting to 'async' mode.
+Writes will not be immediately written to disk.
+Displaying /etc/exports contents:
+/nfsshare *(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)
+
+Starting rpcbind...
+Displaying rpcbind status...
+   program version netid     address                service    owner
+    100000    4    tcp6      ::.0.111               -          superuser
+    100000    3    tcp6      ::.0.111               -          superuser
+    100000    4    udp6      ::.0.111               -          superuser
+    100000    3    udp6      ::.0.111               -          superuser
+    100000    4    tcp       0.0.0.0.0.111          -          superuser
+    100000    3    tcp       0.0.0.0.0.111          -          superuser
+    100000    2    tcp       0.0.0.0.0.111          -          superuser
+    100000    4    udp       0.0.0.0.0.111          -          superuser
+    100000    3    udp       0.0.0.0.0.111          -          superuser
+    100000    2    udp       0.0.0.0.0.111          -          superuser
+    100000    4    local     /var/run/rpcbind.sock  -          superuser
+    100000    3    local     /var/run/rpcbind.sock  -          superuser
+Starting NFS in the background...
+rpc.nfsd: knfsd is currently down
+rpc.nfsd: Writing version string to kernel: -2 -3 +4
+rpc.nfsd: Created AF_INET TCP socket.
+rpc.nfsd: Created AF_INET6 TCP socket.
+Exporting File System...
+exporting *:/nfsshare
+/nfsshare     	<world>
+Starting Mountd in the background...
+Startup successful.
+```
 
 ### What Good Looks Like - Confd Versions
-
-A successful server start should produce log output like this:
 
 ```
 The PERMITTED environment variable is missing or null, defaulting to '*'.
@@ -244,20 +280,6 @@ Startup successful.
 The Dockerfile used to create this image is available at the root of the file system on build.
 
 ```
-FROM golang:1.9-alpine as confd
-
-ARG CONFD_VERSION=0.14.0
-
-ADD https://github.com/kelseyhightower/confd/archive/v${CONFD_VERSION}.tar.gz /tmp/
-
-RUN apk add --no-cache bzip2 make && \
-    mkdir -p /go/src/github.com/kelseyhightower/confd && \
-    cd /go/src/github.com/kelseyhightower/confd && \
-    tar --strip-components=1 -zxf /tmp/v${CONFD_VERSION}.tar.gz && \
-    go install github.com/kelseyhightower/confd && \
-    rm -rf /tmp/v${CONFD_VERSION}.tar.gz /go/src/github.com/kelseyhightower/confd
-
-
 FROM alpine:latest
 LABEL maintainer "Steven Iveson <steve@iveson.eu>"
 LABEL source "https://github.com/sjiveson/nfs-server-alpine"
@@ -270,19 +292,15 @@ RUN apk add --no-cache --update --verbose nfs-utils bash iproute2 && \
     echo "rpc_pipefs    /var/lib/nfs/rpc_pipefs rpc_pipefs      defaults        0       0" >> /etc/fstab && \
     echo "nfsd  /proc/fs/nfsd   nfsd    defaults        0       0" >> /etc/fstab
 
-COPY --from=confd /go/bin/confd /usr/bin/confd
-COPY confd/confd.toml /etc/confd/confd.toml
-COPY confd/toml/* /etc/confd/conf.d/
-COPY confd/tmpl/* /etc/confd/templates/
-
+COPY exports /etc/
 COPY nfsd.sh /usr/bin/nfsd.sh
 COPY .bashrc /root/.bashrc
 
-RUN chmod +x /usr/bin/nfsd.sh /usr/bin/confd
+RUN chmod +x /usr/bin/nfsd.sh
 
 ENTRYPOINT ["/usr/bin/nfsd.sh"]
 ```
 
 ### Acknowlegements
 
-Thanks to Torsten Bronger @bronger for the suggestion and help around implementing a multistage Docker build.
+Thanks to Torsten Bronger @bronger for the suggestion and help around implementing a multistage Docker build to better handle the inclusion of Confd (since removed).
