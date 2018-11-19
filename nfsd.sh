@@ -88,7 +88,7 @@ done
 
 # Partially set 'unofficial Bash Strict Mode' as described here: http://redsymbol.net/articles/unofficial-bash-strict-mode/
 # We don't set -e because the pidof command returns an exit code of 1 when the specified process is not found
-# We expect this at times and don't want the script to be terminated if it occurs
+# We expect this at times and don't want the script to be terminated when it occurs
 set -uo pipefail
 IFS=$'\n\t'
 
