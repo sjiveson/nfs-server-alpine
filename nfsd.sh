@@ -28,7 +28,23 @@ else
   /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
 fi
 
-# This is here to demonsrate how multiple directories can be shared. You
+# Check if the UID variable is empty
+if [ -z "${UID}" ]; then
+  echo "The UID environment variable is unset or null, doing nothing"
+else
+  echo "Changing user ownership of the SHARED_DIRECTORY"
+  /bin/chown ${UID}:${UID} ${SHARED_DIRECTORY}
+fi
+
+# Check if the UID variable is empty
+if [ -z "${DIRECTORY_PERMISSIONS}" ]; then
+  echo "The DIRECTORY_PERMISSIONS environment variable is unset or null, doing nothing"
+else
+  echo "Changing permissions of the SHARED_DIRECTORY"
+  /bin/chmod ${DIRECTORY_PERMISSIONS} ${SHARED_DIRECTORY}
+fi
+
+# This is here to demonstrate how multiple directories can be shared. You
 # would need a block like this for each extra share.
 # Any additional shares MUST be subdirectories of the root directory specified
 # by SHARED_DIRECTORY.
