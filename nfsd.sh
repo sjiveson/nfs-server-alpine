@@ -10,6 +10,7 @@ stop()
   # Let's shutdown cleanly
   echo "SIGTERM caught, terminating NFS process(es)..."
   /usr/sbin/exportfs -uav
+  /usr/sbin/rpc.nfsd 0
   pid1=`pidof rpc.nfsd`
   pid2=`pidof rpc.mountd`
   # For IPv6 bug:
