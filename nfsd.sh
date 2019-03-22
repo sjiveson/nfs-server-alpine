@@ -81,7 +81,7 @@ if [ -z "${CROSSMNT+y}" ]; then
   /bin/sed -i "s/{{CROSSMNT}},//g" /etc/exports
 else
   echo "The CROSSMNT environment variable is set, allowing crossmounts."
-  /bin/sed -i "s/{{SYNC}}/crossmnt/g" /etc/exports
+  /bin/sed -i "s/{{CROSSMNT}}/crossmnt/g" /etc/exports
 fi
 
 # Partially set 'unofficial Bash Strict Mode' as described here: http://redsymbol.net/articles/unofficial-bash-strict-mode/
