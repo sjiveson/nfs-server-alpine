@@ -74,6 +74,16 @@ else
   /bin/sed -i "s/{{SYNC}}/sync/g" /etc/exports
 fi
 
+# Check if the CROSSMNT variable is set (rather than a null string) using parameter expansion
+if [ -z "${CROSSMNT+y}" ]; then
+  echo "The CROSSMNT environment variable is unset or null, so do not allow crossmounts."
+  echo "Mounts in shares will appear empty"
+  /bin/sed -i "s/{{CROSSMNT}},//g" /etc/exports
+else
+  echo "The CROSSMNT environment variable is set, allowing crossmounts."
+  /bin/sed -i "s/{{SYNC}}/crossmnt/g" /etc/exports
+fi
+
 # Partially set 'unofficial Bash Strict Mode' as described here: http://redsymbol.net/articles/unofficial-bash-strict-mode/
 # We don't set -e because the pidof command returns an exit code of 1 when the specified process is not found
 # We expect this at times and don't want the script to be terminated when it occurs
