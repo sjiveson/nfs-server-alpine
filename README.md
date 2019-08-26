@@ -47,7 +47,9 @@ Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `
 
 Adding `-e PERMITTED="10.11.99.*"` will permit only hosts with an IP address starting 10.11.99 to mount the file share.
 
-Adding `-e UID=101` will change the owner of the shared directory to 101:101. This might be handy for file permissions on the mounting system
+Adding `-e DIRECTORY_UID=101` will change the owner of the shared directory to 101:101. This might be handy for file permissions on the mounting system
+
+Adding `e DIRECTORY_UID=101 -e DIRECTORY_GID=100` will change the ownership of the shared directory to 101:100.
 
 Adding `-e DIRECTORY_PERMISSIONS=700` will change the `SHARED_DIRECTORY` top level permissions to the provided number
 
