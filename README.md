@@ -159,30 +159,21 @@ The container requires the SYS_ADMIN capability, or, less securely, to be run in
 
 ### Multiple Shares
 
-This image can be used to export and share multiple directories with a little modification. Be aware that NFSv4 dictates that the additional shared directories are subdirectories of the root share specified by SHARED_DIRECTORY.
+This image can be used to export and share multiple directories. Be aware that NFSv4 dictates that the additional shared directories are subdirectories of the root share specified by SHARED_DIRECTORY.
 
 > Note its far easier to volume mount multiple directories as subdirectories of the root/first and share the root.
 
-To share multiple directories you'll need to mount additional volumes and specify additional environment variables in your docker run command. Here's an example:
+To share multiple directories you'll need to mount additional volumes and specify additional environment variables starting with `EXTRA_SHARED_DIRECTORY_*` in your docker run command. Here's an example:
 ```
-docker run -d --name nfs --privileged -v /some/where/fileshare:/nfsshare -v /some/where/else:/nfsshare/another -e SHARED_DIRECTORY=/nfsshare -e SHARED_DIRECTORY_2=/nfsshare/another itsthenetwork/nfs-server-alpine:latest
-```
-
-You should then modify the **nfsd.sh** file to process the extra environment variables and add entries to the exports file. I've already included a working example to get you started:
-
-```
-if [ ! -z "${SHARED_DIRECTORY_2}" ]; then
-  echo "Writing SHARED_DIRECTORY_2 to /etc/exports file"
-  echo "{{SHARED_DIRECTORY_2}} {{PERMITTED}}({{READ_ONLY}},{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
-  /bin/sed -i "s@{{SHARED_DIRECTORY_2}}@${SHARED_DIRECTORY_2}@g" /etc/exports
-fi
+docker run -d --name nfs --privileged -v /some/where/fileshare:/nfsshare -v /some/where/else:/nfsshare/another -e SHARED_DIRECTORY=/nfsshare -e EXTRA_SHARED_DIRECTORY_1=/nfsshare/another -e EXTRA_SHARED_DIRECTORY_2=/nfsshare/onemore itsthenetwork/nfs-server-alpine:latest
 ```
 
-You'll find you can now mount the root share as normal and the second shared directory will be available as a subdirectory. However, you should now be able to mount the second share directly too. In both cases you don't need to specify the root directory name with the mount commands. Using the `docker run` command above to start a container using this image, the two mount commands would be:
+You'll find you can now mount the root share as normal and the other shared directories will be available as a subdirectories. However, you should now be able to mount the other shares directly too. In both cases you don't need to specify the root directory name with the mount commands. Using the `docker run` command above to start a container using this image, the two mount commands would be:
 
 ```
 sudo mount -v 10.11.12.101:/ /mnt/one
 sudo mount -v 10.11.12.101:/another /mnt/two
+sudo mount -v 10.11.12.101:/onemore /mnt/three
 ```
 
 You might want to make the root share read only, or even make it inaccessible, to encourage users to only mount the correct, more specific shares directly. To do so you'll need to modify the exports file so the root share doesn't get configured based on the values assigned to the PERMITTED or SYNC environment variables.
