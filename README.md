@@ -45,7 +45,7 @@ Adding `-e READ_ONLY` will cause the exports file to contain `ro` instead of `rw
 
 Adding `-e SYNC=true` will cause the exports file to contain `sync` instead of `async`, enabling synchronous mode. Check the exports man page for more information: https://linux.die.net/man/5/exports.
 
-Adding `-e PERMITTED="10.11.99.*"` will permit only hosts with an IP address starting 10.11.99 to mount the file share.
+Adding `-e PERMITTED="10.11.99.*"` or `-e PERMITTED="10.11.99.0\/24"` will permit only hosts with an IP address starting 10.11.99 to mount the file share.
 
 Due to the `fsid=0` parameter set in the **/etc/exports file**, there's no need to specify the folder name when mounting from a client. For example, this works fine even though the folder being mounted and shared is /nfsshare:
 
