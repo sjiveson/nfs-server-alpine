@@ -20,12 +20,15 @@ stop()
   exit
 }
 
+rm /etc/exports
+
 # Check if the SHARED_DIRECTORY variable is empty
 if [ -z "${SHARED_DIRECTORY}" ]; then
   echo "The SHARED_DIRECTORY environment variable is unset or null, exiting..."
   exit 1
 else
   echo "Writing SHARED_DIRECTORY to /etc/exports file"
+  echo "{{SHARED_DIRECTORY}} {{PERMITTED}}({{READ_ONLY}},fsid=0,{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
   /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
 fi
 
