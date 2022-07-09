@@ -32,7 +32,7 @@ else
   /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
 fi
 
-# This is here to demonsrate how multiple directories can be shared. You
+# This is here to demonstrate how multiple directories can be shared. You
 # would need a block like this for each extra share.
 # Any additional shares MUST be subdirectories of the root directory specified
 # by SHARED_DIRECTORY.
@@ -42,6 +42,28 @@ if [ ! -z "${SHARED_DIRECTORY_2}" ]; then
   echo "Writing SHARED_DIRECTORY_2 to /etc/exports file"
   echo "{{SHARED_DIRECTORY_2}} {{PERMITTED}}({{READ_ONLY}},{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
   /bin/sed -i "s@{{SHARED_DIRECTORY_2}}@${SHARED_DIRECTORY_2}@g" /etc/exports
+fi
+
+
+# Cecking if the ownership of the directory needs to be changed
+if [ -z "${DIRECTORY_UID}" ]; then
+  echo "The UID environment variable is unset or null, doing nothing"
+else
+  if [ -z "${DIRECTORY_GID}" ]; then
+      echo "Changing user ownership of the SHARED_DIRECTORY to $DIRECTORY_UID:$DIRECTORY_UID (found no $DIRECTORY_GID env value)"
+      /bin/chown ${DIRECTORY_UID}:${DIRECTORY_UID} ${SHARED_DIRECTORY}
+  else
+    echo "Changing user ownership of the SHARED_DIRECTORY to $DIRECTORY_UID:$DIRECTORY_GID"
+    /bin/chown ${DIRECTORY_UID}:${DIRECTORY_GID} ${SHARED_DIRECTORY}
+  fi
+fi
+
+# Setting the correct permissions for the shared directory
+if [ -z "${DIRECTORY_PERMISSIONS}" ]; then
+  echo "The DIRECTORY_PERMISSIONS environment variable is unset or null, doing nothing"
+else
+  echo "Changing permissions of the SHARED_DIRECTORY"
+  /bin/chmod ${DIRECTORY_PERMISSIONS} ${SHARED_DIRECTORY}
 fi
 
 # Check if the PERMITTED variable is empty
