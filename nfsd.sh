@@ -32,7 +32,7 @@ else
   /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
 fi
 
-# This is here to demonsrate how multiple directories can be shared. You
+# This is here to demonstrate how multiple directories can be shared. You
 # would need a block like this for each extra share.
 # Any additional shares MUST be subdirectories of the root directory specified
 # by SHARED_DIRECTORY.
@@ -116,7 +116,7 @@ while true; do
       echo "Export validation failed, exiting..."
       exit 1
     fi
-    echo "Starting Mountd in the background..."These
+    echo "Starting Mountd in the background..."
     /usr/sbin/rpc.mountd --debug all --no-udp --no-nfs-version 2 --no-nfs-version 3
 # --exports-file /etc/exports
 
