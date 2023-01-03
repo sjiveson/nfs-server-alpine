@@ -10,7 +10,6 @@ RUN apk add --no-cache --update --verbose nfs-utils bash iproute2 && \
     echo "rpc_pipefs    /var/lib/nfs/rpc_pipefs rpc_pipefs      defaults        0       0" >> /etc/fstab && \
     echo "nfsd  /proc/fs/nfsd   nfsd    defaults        0       0" >> /etc/fstab
 
-COPY exports /etc/
 COPY nfsd.sh /usr/bin/nfsd.sh
 COPY .bashrc /root/.bashrc
 

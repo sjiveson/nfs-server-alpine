@@ -20,62 +20,72 @@ stop()
   exit
 }
 
-rm /etc/exports
-
-# Check if the SHARED_DIRECTORY variable is empty
-if [ -z "${SHARED_DIRECTORY}" ]; then
-  echo "The SHARED_DIRECTORY environment variable is unset or null, exiting..."
-  exit 1
-else
-  echo "Writing SHARED_DIRECTORY to /etc/exports file"
-  echo "{{SHARED_DIRECTORY}} {{PERMITTED}}({{READ_ONLY}},fsid=0,{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
-  /bin/sed -i "s@{{SHARED_DIRECTORY}}@${SHARED_DIRECTORY}@g" /etc/exports
-fi
-
-# This is here to demonsrate how multiple directories can be shared. You
-# would need a block like this for each extra share.
-# Any additional shares MUST be subdirectories of the root directory specified
-# by SHARED_DIRECTORY.
-
-# Check if the SHARED_DIRECTORY_2 variable is empty
-if [ ! -z "${SHARED_DIRECTORY_2}" ]; then
-  echo "Writing SHARED_DIRECTORY_2 to /etc/exports file"
-  echo "{{SHARED_DIRECTORY_2}} {{PERMITTED}}({{READ_ONLY}},{{SYNC}},no_subtree_check,no_auth_nlm,insecure,no_root_squash)" >> /etc/exports
-  /bin/sed -i "s@{{SHARED_DIRECTORY_2}}@${SHARED_DIRECTORY_2}@g" /etc/exports
-fi
+# Get mounts
+mounts=( "${@}" )
 
 # Check if the PERMITTED variable is empty
 if [ -z "${PERMITTED}" ]; then
   echo "The PERMITTED environment variable is unset or null, defaulting to '*'."
   echo "This means any client can mount."
-  /bin/sed -i "s/{{PERMITTED}}/*/g" /etc/exports
+  PERMITTED=*
 else
   echo "The PERMITTED environment variable is set."
   echo "The permitted clients are: ${PERMITTED}."
-  /bin/sed -i "s/{{PERMITTED}}/"${PERMITTED}"/g" /etc/exports
 fi
 
 # Check if the READ_ONLY variable is set (rather than a null string) using parameter expansion
 if [ -z ${READ_ONLY+y} ]; then
   echo "The READ_ONLY environment variable is unset or null, defaulting to 'rw'."
   echo "Clients have read/write access."
-  /bin/sed -i "s/{{READ_ONLY}}/rw/g" /etc/exports
+  SET_OPTS=rw
 else
   echo "The READ_ONLY environment variable is set."
   echo "Clients will have read-only access."
-  /bin/sed -i "s/{{READ_ONLY}}/ro/g" /etc/exports
+  SET_OPTS=ro
 fi
 
 # Check if the SYNC variable is set (rather than a null string) using parameter expansion
 if [ -z "${SYNC+y}" ]; then
   echo "The SYNC environment variable is unset or null, defaulting to 'async' mode".
   echo "Writes will not be immediately written to disk."
-  /bin/sed -i "s/{{SYNC}}/async/g" /etc/exports
+  SET_OPTS=${SET_OPTS},async
 else
   echo "The SYNC environment variable is set, using 'sync' mode".
   echo "Writes will be immediately written to disk."
-  /bin/sed -i "s/{{SYNC}}/sync/g" /etc/exports
+  SET_OPTS=${SET_OPTS},sync
 fi
+
+# if NFS_OPTS is not set
+# then use legacy approach
+if [ -z "${NFS_OPTS}" ]; then
+  echo "NFS_OPTS has not been defined. Adding default parameters"
+  # set default options from legacy approach
+  DEFAULT_OPTS=fsid=0,no_subtree_check,no_auth_nlm,insecure,no_root_squash
+  
+  # Build opts string
+  opts=${SET_OPTS},${DEFAULT_OPTS}
+else
+
+  # Otherwise use NFS_OPTS directly
+  echo "NFS_OPTS has been defined. Disregarding READ_ONLY,SYNC, and default parameters"
+
+  # Build opts string
+  opts=${NFS_OPTS}
+fi;
+
+# Check if the SHARED_DIRECTORY variable is empty
+if [ ! -z "${SHARED_DIRECTORY}" ]; then
+  echo "SHARED_DIRECTORY is set. Please use CMD instead"
+  echo "Adding SHARED_DIRECTORY to CMD input"
+  mounts[${#mounts[@]}]=$SHARED_DIRECTORY
+fi
+
+for mnt in "${mounts[@]}"; do
+  echo "Setting up exports for mount: $mnt"
+  src=$(echo $mnt | awk -F':' '{ print $1 }')
+  mkdir -p $src
+  echo "$src ${PERMITTED}($opts)" >> /etc/exports
+done
 
 # Partially set 'unofficial Bash Strict Mode' as described here: http://redsymbol.net/articles/unofficial-bash-strict-mode/
 # We don't set -e because the pidof command returns an exit code of 1 when the specified process is not found
@@ -120,7 +130,7 @@ while true; do
     /usr/sbin/rpc.mountd --debug all --no-udp --no-nfs-version 2 --no-nfs-version 3
 # --exports-file /etc/exports
 
-    # Check if NFS is now running by recording it's PID (if it's not running $pid will be null):
+    # Check if NFS is now running by recording its PID (if it is not running $pid will be null):
     pid=`pidof rpc.mountd`
 
     # If $pid is null, startup failed; log the fact and sleep for 2s
@@ -141,7 +151,7 @@ done
 
 while true; do
 
-  # Check if NFS is STILL running by recording it's PID (if it's not running $pid will be null):
+  # Check if NFS is STILL running by recording its PID (if it is not running $pid will be null):
   pid=`pidof rpc.mountd`
   # If it is not, lets kill our PID1 process (this script) by breaking out of this while loop:
   # This ensures Docker observes the failure and handles it as necessary
