@@ -2,16 +2,44 @@ name: Build and Push Container Image
 
 on:
   push:
-    branches: [ "master" ]
+    branches: 
+    - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Is Versioning Commit
+        run: |
+            echo "IS_VERSIONING_COMMIT=$(startsWith(github.event.commits[0].message, 'Version Kubernetes Agent Chart'))""
+        id: isVersioningCommit
+
+      - name: Get Version
+        run: |
+            echo "VERSION=$(jq -r .version package.json)"
+        id: version
+
+      - if: ${{ steps.isVersioningCommit.outputs.IS_VERSIONING_COMMIT }}
+        name: Tag Commit
+        uses: laputansoft/github-tag-action@v4.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version.outputs.VERSION }}
+
+      - name: Get Tags
+        run: |
+            if [ ${{ steps.isVersioningCommit.outputs.isVersioningCommit }} ]; then
+                tagVersion=${{ steps.version.outputs.VERSION }}
+            else
+                tagVersion=$(git describe --tags)
+            fi
+            echo "TAGS=octopusdeploy/nfs-server:$tagVersion,docker.packages.octopushq.com/octopusdeploy/nfs-server:$tagVersion,octopusdeploy/nfs-server:latest,docker.packages.octopushq.com/octopusdeploy/nfs-server:latest";
+        id: tags
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
       - name: Login to Artifactory
         uses: docker/login-action@v3
         with:
@@ -19,24 +47,17 @@ jobs:
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: docker.packages.octopushq.com/octopusdeploy/nfs-server:latest
-          platforms: linux/amd64,linux/arm64
-
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: octopusdeploy/nfs-server:latest
+          tags: ${{ steps.tags.outputs.TAGS }}
           platforms: linux/amd64,linux/arm64
 
-        

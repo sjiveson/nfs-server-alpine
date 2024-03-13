@@ -1,0 +1,32 @@
+{
+    "name": "nfs-server-alpine",
+    "private": true,
+    "version": "0.0.1",
+    "description": "The official Octopus helm charts",
+    "scripts": {
+        "changeset": "changeset",
+        "ci:version": "run changeset version && install"
+    },
+    "devDependencies": {
+        "@changesets/cli": "^2.27.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/OctopusDeploy/nfs-server-alpine.git"
+    },
+    "keywords": [
+        "agent",
+        "kubernetes",
+        "helm",
+        "octopus"
+    ],
+    "author": "Octopus Deploy",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/OctopusDeploy/nfs-server-alpine/issues"
+    },
+    "homepage": "https://github.com/OctopusDeploy/nfs-server-alpine#readme",
+    "directories": {
+        "doc": "docs"
+    }
+}
