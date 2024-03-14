@@ -1,0 +1,47 @@
+name: Version NFS Server Alpine Container
+
+on:
+  push:
+    branches:
+    - master
+    
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    # For all pushes that aren't creating a versioning commit
+    if: ${{ !startsWith(github.event.commits[0].message, 'Version NFS Server Chart') }}
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: setup-node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Cache .pnpm-store
+      uses: actions/cache@v3.2.3
+      with:
+        path: ~/.pnpm-store
+        key: ${{ runner.os }}-node${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - uses: pnpm/action-setup@v2.2.4
+      with:
+        version: 8.15.2
+        run_install: true
+
+    - name: Install YQ
+      uses: dcarbone/install-yq-action@v1.1.1
+
+    - name: Create Release Pull Request
+      id: changesets
+      uses: changesets/action@v1
+      with:
+        commit: 'Version NFS Server Chart'
+        title: 'Version NFS Server Chart'
+        createGitHubReleases: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
