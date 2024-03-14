@@ -12,12 +12,12 @@ jobs:
     steps:
       - name: Is Versioning Commit
         run: |
-            echo "IS_VERSIONING_COMMIT=$(startsWith(github.event.commits[0].message, 'Version NFS Server Chart'))""
+            echo "IS_VERSIONING_COMMIT=$(startsWith(github.event.commits[0].message, 'Version NFS Server Chart'))" >> $GITHUB_OUTPUT;
         id: isVersioningCommit
 
       - name: Get Version
         run: |
-            echo "VERSION=$(jq -r .version package.json)"
+            echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_OUTPUT;
         id: version
 
       - if: ${{ steps.isVersioningCommit.outputs.IS_VERSIONING_COMMIT }}
