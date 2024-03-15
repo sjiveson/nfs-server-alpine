@@ -3,7 +3,7 @@ name: Build and Push Container Image
 on:
   push:
     branches: 
-    - master
+    - scme/tag-commit-test
 
 jobs:
   build:
