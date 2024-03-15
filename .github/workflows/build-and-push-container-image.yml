@@ -10,17 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+
       - name: Is Versioning Commit
         run: |
-            echo "IS_VERSIONING_COMMIT=$(startsWith(github.event.commits[0].message, 'Version NFS Server Chart'))""
+            isVersioningCommit=${{ startsWith(github.event.commits[0].message, 'Version NFS Server Chart') }};
+            echo "IS_VERSIONING_COMMIT=$isVersioningCommit" >> $GITHUB_OUTPUT;
+            echo "IS_VERSIONING_COMMIT=$isVersioningCommit";
         id: isVersioningCommit
 
       - name: Get Version
         run: |
-            echo "VERSION=$(jq -r .version package.json)"
+            version=$(jq -r .version package.json);
+            echo "VERSION=$version" >> $GITHUB_OUTPUT;
+            echo "VERSION=$version";
         id: version
 
-      - if: ${{ steps.isVersioningCommit.outputs.IS_VERSIONING_COMMIT }}
+      - if: ${{ steps.isVersioningCommit.outputs.IS_VERSIONING_COMMIT == true }}
         name: Tag Commit
         uses: laputansoft/github-tag-action@v4.6
         with:
@@ -29,15 +37,16 @@ jobs:
 
       - name: Get Tags
         run: |
-            if [ ${{ steps.isVersioningCommit.outputs.isVersioningCommit }} ]; then
+            if ${{ steps.isVersioningCommit.outputs.IS_VERSIONING_COMMIT }}; then
                 tagVersion=${{ steps.version.outputs.VERSION }}
-                tags="octopusdeploy/nfs-server:$tagVersion,octopusdeploy/nfs-server:latest";
-            else
-                tagVersion=$(git describe --tags)
                 tags="octopusdeploy/nfs-server:$tagVersion,docker.packages.octopushq.com/octopusdeploy/nfs-server:$tagVersion,octopusdeploy/nfs-server:latest,docker.packages.octopushq.com/octopusdeploy/nfs-server:latest";
+            else
+                : # git describe --tags produces a value matching <tag>-<commits since tag>-<8 char commit hash>
+                tagVersion=$(git describe --tags)
+                tags="docker.packages.octopushq.com/octopusdeploy/nfs-server:$tagVersion";
             fi
             echo "TAGS=$tags" >> $GITHUB_OUTPUT;
-            echo "Publishing the image with the following tags: $tags";
+            echo "TAGS=$tags";
         id: tags
 
       - name: Set up Docker Buildx
