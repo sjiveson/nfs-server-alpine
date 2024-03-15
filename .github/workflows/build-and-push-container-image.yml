@@ -31,10 +31,8 @@ jobs:
 
       - if: steps.isVersioningCommit.outputs.isVersioningCommit == 'true'
         name: Tag Commit
-        uses: laputansoft/github-tag-action@v4.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.version }}
+        run: |
+            git tag -l ${{ steps.version.outputs.version }}
 
       - name: Get Tags
         run: |
